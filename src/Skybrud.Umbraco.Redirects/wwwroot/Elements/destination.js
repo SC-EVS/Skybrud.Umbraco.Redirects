@@ -3,7 +3,7 @@ import { LitElement, html, css, when } from "@umbraco-cms/backoffice/external/li
 import "@umbraco-cms/backoffice/components";
 import { UMB_MODAL_MANAGER_CONTEXT } from "@umbraco-cms/backoffice/modal";
 import { UMB_NOTIFICATION_CONTEXT } from "@umbraco-cms/backoffice/notification";
-import { UMB_LINK_PICKER_MODAL } from "/umbraco/backoffice/packages/multi-url-picker/link-picker-modal/link-picker-modal.token.js";
+import { UMB_LINK_PICKER_MODAL } from "@umbraco-cms/backoffice/multi-url-picker";
 
 import { RedirectsService } from "@skybrud-redirects/service";
 
@@ -54,7 +54,12 @@ export class RedirectsDestinationElement extends UmbElementMixin(LitElement) {
 
         const self = this;
 
-        const modalContext = this.modalManagerContext?.open(this, UMB_LINK_PICKER_MODAL);
+        const modalContext = this.modalManagerContext?.open(this, UMB_LINK_PICKER_MODAL,
+            {
+                data: { config: { hideAnchor: true, hideTarget: true } },
+                modal: { size: 'medium' },
+                value: { link: { ...this.value } },
+            });
 
         modalContext.onSubmit().then(function (value) {
 
@@ -97,7 +102,8 @@ export class RedirectsDestinationElement extends UmbElementMixin(LitElement) {
                 case "external":
                     self.value = {
                         type: "external",
-                        url: value.url
+                        name: value.link.name,
+                        url: value.link.url
                     };
                     break;
 
