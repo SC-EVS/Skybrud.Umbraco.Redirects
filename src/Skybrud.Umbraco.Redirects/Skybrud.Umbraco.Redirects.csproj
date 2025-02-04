@@ -7,9 +7,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>14.0.0-alpha001</VersionPrefix>
+    <VersionPrefix>15.0.0</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)'=='Debug'">build$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmm`))</VersionSuffix>
-    <Authors>Anders Bjerner</Authors>
+    <Authors>Anders Bjerner, Yevhen Savinov</Authors>
     <Company>Limbo</Company>
     <Title>Skybrud Redirects</Title>
     <Description>Redirects manager for Umbraco.</Description>
@@ -31,6 +31,7 @@
   <!-- Include NuGet dependencies -->
   <ItemGroup>
     <PackageReference Include="Skybrud.Essentials" Version="1.1.57" />
+    <PackageReference Include="Umbraco.Cms.Api.Management" Version="15.1.2" />
     <PackageReference Include="Umbraco.Cms.Core" Version="15.1.2" />
     <PackageReference Include="Umbraco.Cms.Web.Website" Version="15.1.2" />
   </ItemGroup>
