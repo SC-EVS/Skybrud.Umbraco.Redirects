@@ -8,28 +8,6 @@
 
 **Skybrud.Umbraco.Redirects** is a redirects manager for Umbraco. The package features a dashboard and property editor that let's users manage inbound redirects from within the Umbraco backoffice.
 
-URLs can be added to redirect to either a content item, media item or a custom URL.
-
-<table>
-  <tr>
-    <td><strong>License:</strong></td>
-    <td><a href="https://github.com/skybrud/Skybrud.Umbraco.Redirects/blob/v13/main/LICENSE.md"><strong>MIT License</strong></a></td>
-  </tr>
-  <tr>
-    <td><strong>Umbraco:</strong></td>
-    <td>
-      Umbraco 13
-    </td>
-  </tr>
-  <tr>
-    <td><strong>Target Framework:</strong></td>
-    <td>
-      .NET 8
-    </td>
-  </tr>
-</table>
-
-
 
 
 
@@ -51,18 +29,6 @@ or the NuGet Package Manager:
 Install-Package Skybrud.Umbraco.Redirects -Version 13.0.5
 ```
 
-**Umbraco 10, 11 and 12**  
-For the Umbraco 10-12 version of this package, see the [**v4/main**](https://github.com/skybrud/Skybrud.Umbraco.Redirects/tree/v4/main) branch instead.
-
-**Umbraco 9**  
-For the Umbraco 9 version of this package, see the [**v3/main**](https://github.com/skybrud/Skybrud.Umbraco.Redirects/tree/v3/main) branch instead.
-
-**Umbraco 8**  
-For the Umbraco 8 version of this package, see the [**v2/main**](https://github.com/skybrud/Skybrud.Umbraco.Redirects/tree/v2/main) branch instead.
-
-**Umbraco 7**  
-For the Umbraco 7 version of this package, see the [**v1/main**](https://github.com/skybrud/Skybrud.Umbraco.Redirects/tree/v1/main) branch instead.
-
 
 
 
@@ -81,18 +47,10 @@ For the Umbraco 7 version of this package, see the [**v1/main**](https://github.
 [NuGetPackage]: https://www.nuget.org/packages/Skybrud.Umbraco.Redirects
 [GitHubRelease]: https://github.com/skybrud/Skybrud.Umbraco.Redirects/releases
 
-
-
-
-<br /><br />
-
 ## Add-ons
 
 - [**Skybrud.Umbraco.Redirects.Import**](https://github.com/skybrud/Skybrud.Umbraco.Redirects.Import)  
 Add-on for handling imports and exports of redirects supporting formats like CSV, XLSX and JSON.
-
-
-
 
 
 <br /><br />
