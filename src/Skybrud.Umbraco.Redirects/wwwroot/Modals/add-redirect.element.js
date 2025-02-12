@@ -128,7 +128,7 @@ export class MyDialogElement extends UmbModalBaseElement {
                     <div class="property">
                         <div>
                             <strong>Original URL<span style="color: red;">*</span></strong><br />
-                            <small>Specify the original URL to match from which the user should be redirected to the destination.</small>
+                            <small>Specify the original URL to match from which the user should be redirected to the destination. Please start the original URL with a / sign.</small>
                         </div>
                         <div>
                             <uui-input id="originalUrl" label="Original URL"></uui-input>

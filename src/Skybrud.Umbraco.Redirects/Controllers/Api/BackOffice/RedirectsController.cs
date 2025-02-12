@@ -2,12 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Skybrud.Essentials.Enums;
 using Skybrud.Essentials.Security.Extensions;
 using Skybrud.Essentials.Strings.Extensions;
@@ -38,15 +42,19 @@ public class RedirectsController : Controller {
     private readonly IRedirectsService _redirectsService;
     private readonly RedirectsBackOfficeHelper _backOfficeHelper;
     private readonly IUmbracoContextAccessor _umbracoContextAccessor;
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
 
     #region Constructors
 
-    public RedirectsController(ILogger<RedirectsController> logger, ILocalizedTextService localizedTextService, IRedirectsService redirectsService, RedirectsBackOfficeHelper backOfficeHelper, IUmbracoContextAccessor umbracoContextAccessor) {
+    public RedirectsController(ILogger<RedirectsController> logger, ILocalizedTextService localizedTextService, IRedirectsService redirectsService, RedirectsBackOfficeHelper backOfficeHelper, IUmbracoContextAccessor umbracoContextAccessor, IHttpClientFactory httpClientFactory, IConfiguration configuration) {
         _logger = logger;
         _localizedTextService = localizedTextService;
         _redirectsService = redirectsService;
         _backOfficeHelper = backOfficeHelper;
         _umbracoContextAccessor = umbracoContextAccessor;
+        _httpClientFactory = httpClientFactory;
+        _configuration = configuration;
     }
 
     #endregion
@@ -97,6 +105,8 @@ public class RedirectsController : Controller {
             // Currently the UI only supports entering the destination URL, so we need to check whether it matches an
             // existing content or media item, if so, overwrite the destination to reflect this
             TryUpdateDestination(redirect);
+
+            TriggerWebhookAsync();
 
             // Map the result for the API
             return Ok(_backOfficeHelper.Map(redirect));
@@ -186,6 +196,8 @@ public class RedirectsController : Controller {
             // Save/update the redirect
             _redirectsService.SaveRedirect(redirect);
 
+            TriggerWebhookAsync();
+
             // Map the result for the API
             return Ok(_backOfficeHelper.Map(redirect));
 
@@ -211,6 +223,8 @@ public class RedirectsController : Controller {
             // Delete the redirect
             _redirectsService.DeleteRedirect(redirect);
 
+            TriggerWebhookAsync();
+
             // Map the result for the API
             return Ok(_backOfficeHelper.Map(redirect));
 
@@ -235,6 +249,8 @@ public class RedirectsController : Controller {
 
             // Delete the redirect
             _redirectsService.DeleteRedirect(redirect);
+
+            TriggerWebhookAsync();
 
             // Map the result for the API
             return Ok(_backOfficeHelper.Map(redirect));
@@ -377,6 +393,24 @@ public class RedirectsController : Controller {
 
     }
 
+    private async Task TriggerWebhookAsync() {
+        var webhookUrl = _configuration["CustomSettings:Redirects:RedirectsWebhookUrl"];
+        var webhookSecret = _configuration["CustomSettings:Redirects:Secret"];
+
+        if (webhookUrl.IsNullOrWhiteSpace() || webhookSecret.IsNullOrWhiteSpace()) {
+            _logger.LogError($"Failed to send webhook: Either webhook URL or webhook secret not set up");
+        }
+
+        var client = _httpClientFactory.CreateClient();
+
+        client.DefaultRequestHeaders.Add("secret", webhookSecret);
+
+        var response = await client.PostAsync(webhookUrl, new StringContent(JsonConvert.SerializeObject(new { message = "Hello, webhook!" }), Encoding.UTF8, "application/json"));
+
+        if (!response.IsSuccessStatusCode) {
+            _logger.LogError($"Failed to send webhook: {response.StatusCode}");
+        }
+    }
     #endregion
 
 }

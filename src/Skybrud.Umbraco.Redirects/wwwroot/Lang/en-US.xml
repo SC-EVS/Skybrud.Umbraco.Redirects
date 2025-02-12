@@ -33,7 +33,7 @@
     <key alias="id">ID</key>
     <key alias="forwardQueryString">Forward query string</key>
     <key alias="forwardQueryStringDescription">When enabled, the query string of the original request is forwarded to the redirect location (pass through).</key>
-    <key alias="labelUrlDescription">Specify the original URL to match from which the user should be redirected to the destination.</key>
+    <key alias="labelUrlDescription">Specify the original URL to match from which the user should be redirected to the destination. Please start the original URL with a / sign.</key>
     <key alias="labelDestinationDescription">Select the page or URL the user should be redirected to.</key>
     <key alias="labelNoRedirects">There has not yet been added any redirects.</key>
     <key alias="labelNoContentRedirects">There has not yet been added any redirects to this page.</key>
@@ -92,10 +92,10 @@
     <key alias="propertySite">Site</key>
     <key alias="propertySiteDescription">Select the site (or root node) the redirect should apply to. If a site is not selected, the redirect will apply to all domains/sites in the Umbraco solution.</key>
     <key alias="propertyOriginalUrl">Original URL</key>
-    <key alias="propertyOriginalUrlDescription">Specify the original URL to match from which the user should be redirected to the destination.</key>
+    <key alias="propertyOriginalUrlDescription">Specify the original URL to match from which the user should be redirected to the destination. Please start the original URL with a / sign.</key>
     <key alias="propertyDestination">Destination</key>
     <key alias="propertyDestinationDescription">Select the page or URL the user should be redirected to.</key>
-    <key alias="propertyOriginalUrlDescription">Specify the original URL to match from which the user should be redirected to the destination.</key>
+    <key alias="propertyOriginalUrlDescription">Specify the original URL to match from which the user should be redirected to the destination. Please start the original URL with a / sign.</key>
     <key alias="propertyDestinationCulture">Culture</key>
     <key alias="propertyDestinationCultureDescription">Select the culture of the destination.</key>
     <key alias="propertyRedirectTypeName">Redirect type</key>

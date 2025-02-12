@@ -31,7 +31,7 @@
 		site: "Site",
 		siteDescription: "Vælg det site (eller rodnode) som redirectet skal gælde for. Vælges der ikke noget site, vil redirectet virke for alle domæner/sites i Umbraco-løsningen.",
 		originalUrl: "Oprindelig URL",
-		originalUrlDescription: "Angiv den oprindelige URL, der skal sende brugeren videre til den valgte destination.",
+		originalUrlDescription: "Angiv den oprindelige URL, der skal sende brugeren videre til den valgte destination. Den originale URL skal begynde med en /.",
 		destination: "Destination",
 		destinationDescription: "Vælg den side eller URL, som brugeren skal sendes videre til.",
 		destinationCulture: "Kultur",

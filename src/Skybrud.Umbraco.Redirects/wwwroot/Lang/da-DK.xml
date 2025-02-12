@@ -33,7 +33,7 @@
     <key alias="id">ID</key>
     <key alias="forwardQueryString">Videresend query string</key>
     <key alias="forwardQueryStringDescription">Når slået til, tilføjes en evt. query string fra det oprindelige request til redirect destinationen.</key>
-    <key alias="labelUrlDescription">Angiv den oprindelige URL, der skal sende brugeren videre til den valgte destination.</key>
+    <key alias="labelUrlDescription">Angiv den oprindelige URL, der skal sende brugeren videre til den valgte destination. Den originale URL skal begynde med en /.</key>
     <key alias="labelDestinationDescription">Vælg den side eller URL, som brugeren skal sendes videre til.</key>
     <key alias="labelNoRedirects">Der er endnu ikke blevet tilføjet nogle redirects.</key>
     <key alias="labelNoContentRedirects">Der er endnu ikke blevet tilføjet nogle redirects, der henviser til denne side.</key>
@@ -92,7 +92,7 @@
     <key alias="propertySite">Site</key>
     <key alias="propertySiteDescription">Vælg det site (eller rodnode) som redirectet skal gælde for. Vælges der ikke noget site, vil redirectet virke for alle domæner/sites i Umbraco-løsningen.</key>
     <key alias="propertyOriginalUrl">Oprindelig URL</key>
-    <key alias="propertyOriginalUrlDescription">Angiv den oprindelige URL, der skal sende brugeren videre til den valgte destination.</key>
+    <key alias="propertyOriginalUrlDescription">Angiv den oprindelige URL, der skal sende brugeren videre til den valgte destination. Den originale URL skal begynde med en /.</key>
     <key alias="propertyDestination">Destination</key>
     <key alias="propertyDestinationDescription">Vælg den side eller URL, som brugeren skal sendes videre til.</key>
     <key alias="propertyDestinationCulture">Kultur</key>

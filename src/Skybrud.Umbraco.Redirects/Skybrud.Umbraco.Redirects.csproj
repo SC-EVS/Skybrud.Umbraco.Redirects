@@ -6,13 +6,21 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <VersionPrefix>15.0.0</VersionPrefix>
+	<ItemGroup>
+		<None Include="$(OutputPath)\*.pdb" Pack="true" PackagePath="lib/$(TargetFramework)/" />
+	</ItemGroup>
+
+
+	<PropertyGroup>
+    <VersionPrefix>15.0.1</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)'=='Debug'">build$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmm`))</VersionSuffix>
     <Authors>Anders Bjerner, Yevhen Savinov</Authors>
     <Company>Limbo</Company>
     <Title>Skybrud Redirects</Title>
-    <Description>Redirects manager for Umbraco.</Description>
+    <Description>
+		Redirects manager for Umbraco. If you are running your Umbraco on SQLite DB, mark the following columns as nullable in the SkybrudRedirects table after the first run:
+		QueryString, DestinationQuery, DestinationFragment, DestinationCulture.
+	</Description>
     <Copyright>Copyright © $([System.DateTime]::UtcNow.ToString(`yyyy`))</Copyright>
   </PropertyGroup>
 
