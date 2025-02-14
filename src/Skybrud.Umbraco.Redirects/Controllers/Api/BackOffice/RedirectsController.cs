@@ -405,7 +405,7 @@ public class RedirectsController : Controller {
 
         client.DefaultRequestHeaders.Add("secret", webhookSecret);
 
-        var response = await client.PostAsync(webhookUrl, new StringContent(JsonConvert.SerializeObject(new { message = "Hello, webhook!" }), Encoding.UTF8, "application/json"));
+        var response = await client.PostAsync(webhookUrl, new StringContent(JsonConvert.SerializeObject(new { origin = "redirects" }), Encoding.UTF8, "application/json"));
 
         if (!response.IsSuccessStatusCode) {
             _logger.LogError($"Failed to send webhook: {response.StatusCode}");

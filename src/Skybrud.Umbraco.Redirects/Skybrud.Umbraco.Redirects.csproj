@@ -12,7 +12,7 @@
 
 
 	<PropertyGroup>
-    <VersionPrefix>15.0.1</VersionPrefix>
+    <VersionPrefix>15.0.2</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)'=='Debug'">build$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmm`))</VersionSuffix>
     <Authors>Anders Bjerner, Yevhen Savinov</Authors>
     <Company>Limbo</Company>
@@ -20,6 +20,18 @@
     <Description>
 		Redirects manager for Umbraco. If you are running your Umbraco on SQLite DB, mark the following columns as nullable in the SkybrudRedirects table after the first run:
 		QueryString, DestinationQuery, DestinationFragment, DestinationCulture.
+
+		A webhook to FE functionallity is available. To use it, you need to add the following app setting to your configuration:
+		1. CustomSettings:Redirects:RedirectsWebhookUrl -- the URL of the webhook;
+		2. CustomSettings:Redirects:RedirectsWebhookSecret -- the secret key for the webhook;
+		It will send a POST request to the specified URL with the following JSON header:
+		{
+		"secret": "your_secret
+		}
+		and the body will contain the following JSON object:
+		{
+		origin = "redirects"
+		}
 	</Description>
     <Copyright>Copyright © $([System.DateTime]::UtcNow.ToString(`yyyy`))</Copyright>
   </PropertyGroup>
