@@ -12,7 +12,7 @@
 
 
 	<PropertyGroup>
-    <VersionPrefix>15.0.2</VersionPrefix>
+    <VersionPrefix>15.1.0</VersionPrefix>
     <VersionSuffix Condition="'$(Configuration)'=='Debug'">build$([System.DateTime]::UtcNow.ToString(`yyyyMMddHHmm`))</VersionSuffix>
     <Authors>Anders Bjerner, Yevhen Savinov</Authors>
     <Company>Limbo</Company>
@@ -26,7 +26,7 @@
 		2. CustomSettings:Redirects:RedirectsWebhookSecret -- the secret key for the webhook;
 		It will send a POST request to the specified URL with the following JSON header:
 		{
-		"secret": "your_secret
+		"secret": "your_secret"
 		}
 		and the body will contain the following JSON object:
 		{
