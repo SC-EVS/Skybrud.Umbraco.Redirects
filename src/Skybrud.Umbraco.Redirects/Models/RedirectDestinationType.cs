@@ -23,6 +23,10 @@ public enum RedirectDestinationType {
     /// <summary>
     /// Describes a link that is a reference to an internal media node in Umbraco.
     /// </summary>
-    Media
+    Media,
 
+    /// <summary>
+    /// Describes a link that is an external URL. (added for compatibility)
+    /// </summary>
+    External
 }
