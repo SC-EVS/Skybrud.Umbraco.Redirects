@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,12 +101,24 @@ public class RedirectsController : Controller {
             if (string.IsNullOrWhiteSpace(options.OriginalUrl)) throw new RedirectsException(_backOfficeHelper.Localize("errorNoUrl"));
             if (string.IsNullOrWhiteSpace(options.Destination.Url)) throw new RedirectsException(_backOfficeHelper.Localize("errorNoDestination"));
 
+            //Added for legacy support
+            if (options.Destination.Type.Equals(RedirectDestinationType.External)) {
+                options.Destination.Type = RedirectDestinationType.Url;
+            }
+
             // Add the redirect
             IRedirect redirect = _redirectsService.AddRedirect(options);
 
             // Currently the UI only supports entering the destination URL, so we need to check whether it matches an
             // existing content or media item, if so, overwrite the destination to reflect this
             TryUpdateDestination(redirect);
+
+            //ugly hack to make it work. For some reason it's being saved with an empty string in the query string while it should be null
+            // Split the URL (path) and query string
+            options.OriginalUrl.Split('?', out string url, out string? query);
+            redirect.QueryString = query;
+
+            _redirectsService.SaveRedirect(redirect);
 
             TriggerWebhookAsync();
 
