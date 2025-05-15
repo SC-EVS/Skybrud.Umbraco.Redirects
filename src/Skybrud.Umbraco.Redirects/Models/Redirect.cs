@@ -44,7 +44,7 @@ public class Redirect : IRedirect {
     /// </summary>
     public string Path {
         get => Dto.Path;
-        set => Dto.Path = value.TrimEnd('/');
+        set => Dto.Path = value;
     }
 
     /// <summary>
