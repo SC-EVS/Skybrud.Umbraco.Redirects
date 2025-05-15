@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -9,10 +10,12 @@ using Asp.Versioning;
 using Humanizer.Localisation;
 using Lucene.Net.Util;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Skybrud.Essentials.Enums;
+using Skybrud.Essentials.Strings.Extensions;
 using Skybrud.Essentials.Time;
 using Skybrud.Umbraco.Redirects.Controllers.Api.BackOffice;
 using Skybrud.Umbraco.Redirects.Helpers;
@@ -86,6 +89,97 @@ public class RedirectsCollectionController : Controller {
 
         return allRedirects;
 
+    }
+
+
+    /// <summary>
+    /// Accepts a CSV file with first two columns as old URL and new URL. The CSV file should be formatted as follows:
+    /// 1st column: Old URL (e.g. /old-url)
+    /// 2nd column: New URL (e.g. /new-url)
+    /// </summary>
+    [HttpPost("import-redirects-csv")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> ImportRedirectsFromCsv(IFormFile file) {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file uploaded.");
+
+        var added = new List<string>();
+        var skipped = new List<string>();
+
+        // Read all existing custom redirects (Old URLs)
+        var existingRedirects = _redirectsService.GetRedirects();
+        var existingOldUrls = new HashSet<string>(
+            existingRedirects.Select(r => r.Url.Trim().ToLowerInvariant())
+        );
+
+        using (var stream = file.OpenReadStream())
+        using (var reader = new StreamReader(stream)) {
+            string? line;
+            while ((line = await reader.ReadLineAsync()) != null) {
+                // Skip empty lines
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                // Split CSV (simple split, for more complex CSVs use a library)
+                var columns = line.Split(',');
+                if (columns.Length < 2) continue;
+
+                var oldUrl = columns[0].Trim();
+                var newUrl = columns[1].Trim();
+
+                // Split the URL (path) and query string
+                oldUrl.Split('?', out string oldCleanUrl, out string? oldQueryString);
+                newUrl.Split('?', out string newCleanUrl, out string? newQueryString);
+
+                var oldUrlAbsolutePath = GetAbsolutePath(oldCleanUrl);
+                var newUrlAbsolutePath = GetAbsolutePath(newCleanUrl);
+
+                if (string.IsNullOrWhiteSpace(oldUrl) || string.IsNullOrWhiteSpace(newUrl))
+                    continue;
+
+                // Check if redirect already exists
+                if (existingOldUrls.Contains(oldUrlAbsolutePath.ToLowerInvariant())) {
+                    skipped.Add(oldCleanUrl);
+                    continue;
+                }
+
+                // Create and add the redirect
+                var options = new AddRedirectOptions {
+                    OriginalUrl = oldUrlAbsolutePath,
+                    Destination = new RedirectDestination {
+                        Url = newUrlAbsolutePath,
+                        Query = newQueryString,
+                        Type = RedirectDestinationType.Url
+                    },
+                    Type = RedirectType.Permanent,
+                    ForwardQueryString = false,
+                    RootNodeKey = Guid.Empty // or set as needed
+                };
+
+                try {
+                    var redirect = _redirectsService.AddRedirect(options);
+                    redirect.QueryString = oldQueryString;
+                    _redirectsService.SaveRedirect(redirect);
+
+                    added.Add(oldCleanUrl);
+                    existingOldUrls.Add(oldCleanUrl.ToLowerInvariant());
+                } catch (Exception ex) {
+                    // Optionally log or collect errors
+                    skipped.Add(oldUrl + " (error: " + ex.Message + ")");
+                }
+            }
+        }
+
+        return Ok(new {
+            addedCount = added.Count,
+            skippedCount = skipped.Count,
+            added,
+            skipped
+        });
+    }
+
+
+    private static string GetAbsolutePath(string url) {
+        return !Uri.TryCreate(url, UriKind.Absolute, out Uri uri) ? null : uri.AbsolutePath;
     }
 }
 
