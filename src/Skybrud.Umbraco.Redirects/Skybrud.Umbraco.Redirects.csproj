@@ -50,6 +50,7 @@
 
   <!-- Include NuGet dependencies -->
   <ItemGroup>
+    <PackageReference Include="CsvHelper" Version="33.0.1" />
     <PackageReference Include="Skybrud.Essentials" Version="1.1.57" />
     <PackageReference Include="Umbraco.Cms.Api.Management" Version="15.1.2" />
     <PackageReference Include="Umbraco.Cms.Core" Version="15.1.2" />
