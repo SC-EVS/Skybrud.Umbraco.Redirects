@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.Web;
 using Asp.Versioning;
+using CsvHelper;
+using CsvHelper.Configuration;
 using Humanizer.Localisation;
 using Lucene.Net.Util;
 using Microsoft.AspNetCore.Authorization;
@@ -30,6 +34,8 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.Common.Authorization;
 using Umbraco.Cms.Web.Common.Routing;
+using static Umbraco.Cms.Core.Constants.Conventions;
+
 
 namespace Skybrud.Umbraco.Redirects.Controllers.Api;
 
@@ -99,7 +105,8 @@ public class RedirectsCollectionController : Controller {
     /// </summary>
     [HttpPost("import-redirects-csv")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> ImportRedirectsFromCsv(IFormFile file) {
+    public async Task<IActionResult> ImportRedirectsFromCsv(IFormFile file)
+    {
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
@@ -113,63 +120,87 @@ public class RedirectsCollectionController : Controller {
         );
 
         using (var stream = file.OpenReadStream())
-        using (var reader = new StreamReader(stream)) {
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null) {
-                // Skip empty lines
-                if (string.IsNullOrWhiteSpace(line)) continue;
+        using (var reader = new StreamReader(stream))
+        using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = false,
+            IgnoreBlankLines = true,
+            TrimOptions = TrimOptions.Trim,
+            BadDataFound = null // Ignore bad data
+        }))
+        {
+            while (await csv.ReadAsync())
+            {
+                try
+                {
+                    var record = csv.GetRecord<CSVRedirectRecord>();
 
-                // Split CSV (simple split, for more complex CSVs use a library)
-                var columns = line.Split(',');
-                if (columns.Length < 2) continue;
+                    // Skip if model is not fully populated
+                    if (string.IsNullOrEmpty(record.OldUrl) || string.IsNullOrEmpty(record.NewUrl))
+                        continue;
 
-                var oldUrl = columns[0].Trim();
-                var newUrl = columns[1].Trim();
+                    var oldUrl = record.OldUrl;
+                    var newUrl = record.NewUrl; // Use last column as new URL
 
-                // Split the URL (path) and query string
-                oldUrl.Split('?', out string oldCleanUrl, out string? oldQueryString);
-                newUrl.Split('?', out string newCleanUrl, out string? newQueryString);
+                    // Split the URL (path) and query string
+                    oldUrl.Split('?', out string oldCleanUrl, out string? oldQueryString);
+                    newUrl.Split('?', out string newCleanUrl, out string? newQueryString);
 
-                var oldUrlAbsolutePath = GetAbsolutePath(oldCleanUrl);
-                var newUrlAbsolutePath = GetAbsolutePath(newCleanUrl);
+                    var oldUrlAbsolutePath = HttpUtility.UrlDecode(GetAbsolutePath(oldCleanUrl)) ;
+                    var newUrlAbsolutePath = HttpUtility.UrlDecode(GetAbsolutePath(newCleanUrl));
 
-                if (string.IsNullOrWhiteSpace(oldUrl) || string.IsNullOrWhiteSpace(newUrl))
-                    continue;
+                    if (string.IsNullOrWhiteSpace(oldUrl) || string.IsNullOrWhiteSpace(newUrl)
+                        || string.IsNullOrWhiteSpace(oldUrlAbsolutePath) || string.IsNullOrWhiteSpace(newUrlAbsolutePath))
+                    {
+                        skipped.Add(oldUrl + " (error: Invalid or missing URL)");
+                        continue;
+                    }
 
-                // Check if redirect already exists
-                if (existingOldUrls.Contains(oldUrlAbsolutePath.ToLowerInvariant())) {
-                    skipped.Add(oldCleanUrl);
-                    continue;
+                    // Check if redirect already exists
+                    if (existingOldUrls.Contains(oldUrlAbsolutePath.ToLowerInvariant()))
+                    {
+                        skipped.Add(oldCleanUrl);
+                        continue;
+                    }
+
+                    // Create and add the redirect
+                    var options = new AddRedirectOptions
+                    {
+                        OriginalUrl = oldUrlAbsolutePath,
+                        Destination = new RedirectDestination
+                        {
+                            Url = newUrlAbsolutePath,
+                            Query = newQueryString,
+                            Type = RedirectDestinationType.Url
+                        },
+                        Type = RedirectType.Permanent,
+                        ForwardQueryString = false,
+                        RootNodeKey = Guid.Empty // or set as needed
+                    };
+
+                    try
+                    {
+                        var redirect = _redirectsService.AddRedirect(options);
+                        redirect.QueryString = oldQueryString;
+                        _redirectsService.SaveRedirect(redirect);
+
+                        added.Add(oldCleanUrl);
+                        existingOldUrls.Add(oldCleanUrl.ToLowerInvariant());
+                    }
+                    catch (Exception ex)
+                    {
+                        skipped.Add(oldUrl + " (error during adding the redirect: " + ex.Message + ")");
+                    }
                 }
-
-                // Create and add the redirect
-                var options = new AddRedirectOptions {
-                    OriginalUrl = oldUrlAbsolutePath,
-                    Destination = new RedirectDestination {
-                        Url = newUrlAbsolutePath,
-                        Query = newQueryString,
-                        Type = RedirectDestinationType.Url
-                    },
-                    Type = RedirectType.Permanent,
-                    ForwardQueryString = false,
-                    RootNodeKey = Guid.Empty // or set as needed
-                };
-
-                try {
-                    var redirect = _redirectsService.AddRedirect(options);
-                    redirect.QueryString = oldQueryString;
-                    _redirectsService.SaveRedirect(redirect);
-
-                    added.Add(oldCleanUrl);
-                    existingOldUrls.Add(oldCleanUrl.ToLowerInvariant());
-                } catch (Exception ex) {
-                    // Optionally log or collect errors
-                    skipped.Add(oldUrl + " (error: " + ex.Message + ")");
+                catch (Exception e)
+                {
+                    skipped.Add(csv.GetRecord<CSVRedirectRecord>().ToString() + " (error during parsing: " + e.Message + ")");
                 }
             }
         }
 
-        return Ok(new {
+        return Ok(new
+        {
             addedCount = added.Count,
             skippedCount = skipped.Count,
             added,
@@ -197,4 +228,9 @@ public class RedirectModel {
     [JsonPropertyName("permanent")]
     public bool IsPermanent { get; set; }
 
+}
+
+public class CSVRedirectRecord {
+    public string OldUrl { get; set; }
+    public string NewUrl { get; set; }
 }
